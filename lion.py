@@ -1,34 +1,47 @@
-from collections import Counter 
+import docx
 import matplotlib.pyplot as plt
-import pandas as pd 
-import docx 
-import re
-file_path = 'lion.docx'
-doc = docx.Document(file_path)
-text = []
-for paragraph in doc.paragraphs:
- text.append(paragraph.text) 
-full_text = ' '.join(text)
-words = re.findall(r'\b\w+\b', full_text.lower()) 
-word_count = Counter(words)
-total_words = sum(word_count.values()) 
-df_words = pd.DataFrame(word_count.items(), columns=['Слово', 'Частота'])
-df_words['Процент'] = (df_words['Частота'] / total_words) * 100 
-print(df_words)
-output_file_words = 'word_frequency.csv' 
-df_words.to_csv(output_file_words, index=False, encoding='utf-8')
-print(f'Результаты частоты слов сохранены в файл: {output_file_words}')
-letters = re.findall(r'[а-яА-ЯёЁ]', full_text.lower()) 
-letter_count = Counter(letters)
-df_letters = pd.DataFrame(letter_count.items(), columns=['Буква', 'Частота']) 
-total_letters = sum(letter_count.values()) 
-df_letters['Процент'] = (df_letters['Частота'] / total_letters) * 100 
-plt.bar(df_letters['Буква'], df_letters['Частота'])                               
-plt.title('Частота встречаемости букв') 
-plt.xlabel('Буквы')                         
-plt.ylabel('Частота')                         
-plt.grid(axis='y') 
-plt.tight_layout() 
-plt.show() 
+import pandas as pd
 
+doc = docx.Document('lion.docx')
+text = ' '.join([k.text for k in doc.paragraphs])
 
+nenad= '.,!?;:"()[]{}«»—1234567890'
+for z in nenad:
+    text = text.replace(z, '')
+
+words = text.split()
+
+slova= [ ]
+
+buk= ['а','б','в','г','д','е','ё','ж','з','и','й','к','л','м','н','о','п','р','с','т','у','ф','х','ц','ч','ш','щ','ъ','ы','ь','э','ю','я' ]
+
+for i in words:
+    if i not in slova:
+        slova.append(i)
+
+word_counts = {}
+
+kolichestvo_slov = len(words)
+
+for word in slova:
+    count = words.count(word)
+    word_counts[word] = count
+
+spisok_slov = [(slovo, kolichestvo, (kolichestvo / kolichestvo_slov) * 100) for slovo, kolichestvo in word_counts.items()]
+pd.DataFrame(spisok_slov, columns=['Слово', 'Количество', 'Частота (%)']).to_excel('slova.xlsx', index=False)  # сохраняем в Excel
+
+buk_counts = {}
+
+for wor in buk:
+    coun = text.count(wor)
+    buk_counts[wor] = coun
+
+print(buk_counts)
+
+plt.bar(buk_counts.keys(), buk_counts.values())  # создаем столбчатую диаграмму
+plt.ylabel('Количество')  # подпись для  оси игрик
+plt.xlabel('Буквы')  # подпись для горизонтальной оси икс
+plt.show()  # показываем график
+
+for bukva, kolichestvo in buk_counts.items():
+    print(f"{bukva}: {kolichestvo}")  # печатаем статистику    
